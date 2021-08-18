@@ -1,3 +1,2 @@
-; core variables
 [core]
-	hooksPath=.githooks
+	hooksPath = .githooks

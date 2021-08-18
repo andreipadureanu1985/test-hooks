@@ -1,0 +1,36 @@
+#!/bin/sh
+#
+#!/usr/bin/env bash
+
+function joinByString() {
+  local separator="$1"
+  shift
+  local first="$1"
+  shift
+  printf "%s" "$first" "${@/#/$separator}"
+}
+
+MESSAGE_FORMAT_CHECK_BYPASS_USERS=("Jenkins Automation")
+ALLOWED_COMMIT_MESSAGE_PATTERNS=("^(IBAPPS)-[[:digit:]]")
+ALLOWED_COMMIT_MESSAGE_EXAMPLES=("IBAPPS-123 commit message")
+
+AUTHOR_LINE=$(git var GIT_AUTHOR_IDENT)
+for USER in "${MESSAGE_FORMAT_CHECK_BYPASS_USERS[@]}"
+do
+   BYPASS_PATTERN="^($USER)"
+   if [[ "$AUTHOR_LINE" =~ $BYPASS_PATTERN ]]; then
+		exit 0
+   fi
+done
+
+START_LINE=`head -n1 $1`
+for ALLOWED_COMMIT_MESSAGE_PATTERN in "${ALLOWED_COMMIT_MESSAGE_PATTERNS[@]}"
+do
+	if [[ "$START_LINE" =~ $ALLOWED_COMMIT_MESSAGE_PATTERN ]]; then
+		exit 0
+	fi
+done
+
+echo "Bad commit message format, see examples: "
+joinByString ', ' "${ALLOWED_COMMIT_MESSAGE_EXAMPLES[@]}"
+exit 1
